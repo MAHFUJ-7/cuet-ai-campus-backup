@@ -161,6 +161,7 @@ export const CR_ACTION_GROUPS = [
       { kind: 'declare_ct', assessmentKind: 'ct', icon: 'quiz', label: 'Class Test (CT)', description: 'Batch-wide class test for a course' },
       { kind: 'declare_ct', assessmentKind: 'quiz', icon: 'fact_check', label: 'Quiz', description: 'Batch-wide quiz for a course' },
       { kind: 'declare_ct', assessmentKind: 'viva', icon: 'co_present', label: 'Viva', description: 'Batch-wide viva for a course' },
+      { kind: 'manage_exams', icon: 'edit_calendar', label: 'Manage CTs & Exams', description: 'Reschedule or cancel declared CTs and exams' },
     ],
   },
   {

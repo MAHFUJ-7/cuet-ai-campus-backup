@@ -17,6 +17,7 @@ import {
   ExtraClassDialog,
   WrapUpDialog,
 } from './CrDialogs.jsx';
+import ExamManageDialog from './ExamManageDialog.jsx';
 import PermanentRoutineDialog from './PermanentRoutineDialog.jsx';
 import ClassRoutineDialog from './ClassRoutineDialog.jsx';
 import { useCrCenter } from './useCrCenter.js';
@@ -31,6 +32,7 @@ const DIALOG_ACTIONS = new Set([
   'declare_ct',
   'wrap_up',
   'exam_routine',
+  'manage_exams',
   'permanent_routine',
   'class_routine_edit',
   'class_routine_propose',
@@ -164,6 +166,9 @@ export default function CrDashboardPage() {
       )}
       {flow === 'exam_routine' && (
         <ExamRoutineBuilderDialog open onClose={closeFlow} controller={controller} profile={profile} />
+      )}
+      {flow === 'manage_exams' && (
+        <ExamManageDialog open onClose={closeFlow} controller={controller} profile={profile} />
       )}
       {flow === 'permanent_routine' && (
         <PermanentRoutineDialog

@@ -57,6 +57,13 @@ async function buildAssistantContext(user) {
   const ownSectionId = idOf(user.sectionId);
   const examSectionIds = coordinator ? sectionIds : [...new Set([ownSectionId].filter(Boolean))];
 
+  // Student/account stats are coordinator-only; other roles never query users.
+  const usersPromise = coordinator
+    ? User.find({ sectionId: { $in: sectionIds } })
+        .select('roles lastLoginAt isActive sectionId')
+        .lean()
+    : Promise.resolve([]);
+
   const [routineRows, exams, updates, users] = await Promise.all([
     RoutineEntry.find({ sectionId: { $in: sectionIds } })
       .populate(routinePopulate)
@@ -67,9 +74,7 @@ async function buildAssistantContext(user) {
           .sort({ examDate: 1, startTime: 1 })
       : Promise.resolve([]),
     listUpdates({ page: 1, limit: 100 }, user),
-    User.find({ sectionId: { $in: sectionIds } })
-      .select('roles lastLoginAt isActive sectionId')
-      .lean(),
+    usersPromise,
   ]);
 
   const sectionNameById = new Map(sections.map((section) => [String(section._id), section.name]));
@@ -105,14 +110,15 @@ async function buildAssistantContext(user) {
     conflicts.push(...detectConflicts(ownRoutine, serializedExams));
   }
 
-  const stats = buildUserStats(users, sections, batchNumberById, coordinator);
+  // Stats (and the STUDENTS block in the context text) only for coordinators.
+  const stats = coordinator ? buildUserStats(users, sections, batchNumberById, true) : null;
 
   const text = buildContextText({
     routine,
     updates: updates.items,
     exams: serializedExams,
     conflicts,
-    users: stats.bySection,
+    users: stats ? stats.bySection : [],
     departmentWide: coordinator,
   });
 
@@ -357,6 +363,12 @@ function deterministicReply(message, user, context = null) {
       '',
       ...lines,
     ].join('\n');
+  }
+  if (asksPeople) {
+    return (
+      'Student counts and login stats are **only available to coordinator accounts**.\n\n' +
+      'If you are the coordinator, sign in with the coordinator account and ask again.'
+    );
   }
 
   // Exams — word boundaries so "ct" no longer matches inside words like "conflict".
